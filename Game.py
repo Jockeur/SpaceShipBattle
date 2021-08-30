@@ -7,10 +7,21 @@ class Game:
     def __init__(self, res):
         self.res = res
 
+        self.bords = [
+            [-30, self.res[0] + 30],
+            [-30, self.res[1] + 30]
+        ]
+
+        self.player_bords = [[10, self.res[0] - 10],
+                             [10, self.res[1] - 10]]
+
         self.window_title = "SpaceShips Battle"
         self.is_running = True
 
         self.clock = pygame.time.Clock()
+
+        self.bg = pygame.image.load("res/bg/fond.png")
+        self.bg_img = pygame.transform.scale2x(self.bg)
 
         self.player_ship_image = pygame.image.load("res/sprites/spaceship.png")
         self.bullet_image = pygame.image.load("res/sprites/bullet.png")
@@ -64,12 +75,35 @@ class Game:
 
         self.player.move(vector[0], vector[1])
 
+        # x
+        if self.player.pos[0] < self.player_bords[0][0]:
+            self.player.pos = (self.player_bords[0][0], self.player.pos[1])
+        elif self.player.pos[0] > self.player_bords[0][1]:
+            self.player.pos = (self.player_bords[0][1], self.player.pos[1])
+
+        # y
+        if self.player.pos[1] < self.player_bords[1][0]:
+            self.player.pos = (self.player.pos[0], self.player_bords[1][0])
+        elif self.player.pos[1] > self.player_bords[1][1]:
+            self.player.pos = (self.player.pos[0], self.player_bords[1][1])
+
     def draw(self):
         self.screen.blit(self.player.image, self.player.rect)
         self.player_bullet_group.draw(self.screen)
 
+    def clear_bullets(self):
+        for bullet in self.player_bullet_group.sprites():
+            if bullet.rect.centerx < self.bords[0][0] or bullet.rect.centerx > self.bords[0][1]:
+                self.player_bullet_group.remove(bullet)
+            if bullet.rect.centery < self.bords[1][0] or bullet.rect.centery > self.bords[1][1]:
+                self.player_bullet_group.remove(bullet)
+            if bullet not in self.player_bullet_group.sprites():
+                del bullet
+
     def update(self):
-        self.screen.fill(50)
+        self.screen.blit(self.bg_img, (0, 0))
+
+        self.clear_bullets()
 
         self.player.update()
         self.player_bullet_group.update()
