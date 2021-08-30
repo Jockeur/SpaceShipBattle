@@ -24,6 +24,12 @@ class SpaceShip(pygame.sprite.Sprite):
         self.image = img
         self.rect = self.image.get_rect()
 
+        self.channel_explo = pygame.mixer.Channel(0)
+        self.channel_laser = pygame.mixer.Channel(1)
+
+        self.explo_sound = pygame.mixer.Sound("res/sounds/explo.ogg")
+        self.laser_sound = pygame.mixer.Sound("res/sounds/laser.ogg")
+
     def update(self):
         self.image = pygame.transform.rotozoom(self.image_origin, self.rotation, self.scale)
         self.rect = self.image.get_rect()
@@ -48,5 +54,9 @@ class SpaceShip(pygame.sprite.Sprite):
     def fire(self):
         if self.can_fire:
             self.can_fire = False
+            self.channel_laser.play(self.laser_sound)
             self.start_time = time.time()
             return Bullet(self.pos, (self.direction.x, self.direction.y), 15, self.bullet_img)
+
+    def play_explo_sound(self):
+        self.channel_explo.play(self.explo_sound)
