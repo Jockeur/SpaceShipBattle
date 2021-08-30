@@ -47,13 +47,10 @@ class Game:
         self.start()
 
     def start(self):
-        print('Starting...')
         pygame.init()
-        print('Pygame initializated')
         self.screen = pygame.display.set_mode(self.res)
-        print('Window opened')
         pygame.display.set_caption(self.window_title)
-        print('Initializing player')
+        pygame.display.set_icon(self.player_ship_image)
 
         self.run()
 
@@ -126,7 +123,6 @@ class Game:
             del self.player
             self.game_over()
 
-            print('Game Over')
             self.quit()
 
     def draw_score(self):
@@ -175,5 +171,4 @@ class Game:
     def quit(self):
         pygame.display.quit()
         pygame.quit()
-        print('Stopping the game')
         del self
