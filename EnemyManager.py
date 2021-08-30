@@ -20,11 +20,19 @@ class EnemyManager:
 
         self.enemy_list = [self.enemy_1, self.enemy_2, self.enemy_3]
 
+        self.ellipse = (self.res[0]/2 - 20, self.res[1]/2 - 10)
+
         self.level = 1
 
         self.spawn(self.level)
 
     def update(self):
+        if len(self.sprite_group.sprites())  == 0:
+            self.level += 1
+            self.spawn(self.level)
+
+        for enemy in self.sprite_group.sprites():
+            enemy.pre_update(self.player)
         self.sprite_group.update()
 
     def draw(self, surface):
@@ -33,5 +41,5 @@ class EnemyManager:
     def spawn(self, n):
         for k in range(n):
             enemy_img = random.choice(self.enemy_list)
-            enemy = Enemy((400, 75*k), self.player.speed, enemy_img, self.bullet_img)
+            enemy = Enemy((400, 75*k), self.player.speed, enemy_img, self.bullet_img, self.ellipse, self.res)
             self.sprite_group.add(enemy)

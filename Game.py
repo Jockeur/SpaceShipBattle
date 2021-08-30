@@ -27,7 +27,7 @@ class Game:
         self.player_ship_image = pygame.image.load("res/sprites/spaceship.png")
         self.bullet_image = pygame.image.load("res/sprites/bullet.png")
 
-        self.player = SpaceShip((200, 200), 10, self.player_ship_image, self.bullet_image)
+        self.player = SpaceShip((self.res[0]/2, self.res[1]/2), 10, self.player_ship_image, self.bullet_image)
 
         self.player_bullet_group = pygame.sprite.Group()
 
