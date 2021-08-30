@@ -60,6 +60,7 @@ class Game:
                 self.manage_events(e)
             self.manage_pressed_keys()
             self.update()
+
         self.quit()
 
     def manage_events(self, e):
@@ -154,7 +155,10 @@ class Game:
         self.manage_collision()
 
         self.clock.tick(50)
-        pygame.display.flip()
+        try:
+            pygame.display.flip()
+        except pygame.error:
+            pass
 
     def game_over(self):
         self.game_over_timer_start = time.time()
@@ -166,9 +170,11 @@ class Game:
 
             pygame.display.flip()
 
+        self.is_running = False
         self.quit()
 
     def quit(self):
+        self.is_running = False
         pygame.display.quit()
         pygame.quit()
         del self
