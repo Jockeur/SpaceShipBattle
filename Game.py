@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 from SpaceShip import *
+from EnemyManager import *
 
 
 class Game:
@@ -29,6 +30,8 @@ class Game:
         self.player = SpaceShip((200, 200), 10, self.player_ship_image, self.bullet_image)
 
         self.player_bullet_group = pygame.sprite.Group()
+
+        self.enemy_manager = EnemyManager(res, self.player)
 
         self.start()
 
@@ -89,6 +92,9 @@ class Game:
 
     def draw(self):
         self.screen.blit(self.player.image, self.player.rect)
+
+        self.enemy_manager.draw(self.screen)
+
         self.player_bullet_group.draw(self.screen)
 
     def clear_bullets(self):
@@ -107,6 +113,8 @@ class Game:
 
         self.player.update()
         self.player_bullet_group.update()
+
+        self.enemy_manager.update()
 
         self.draw()
 
