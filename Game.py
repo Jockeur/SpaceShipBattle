@@ -3,6 +3,7 @@ from pygame.locals import *
 from SpaceShip import *
 from EnemyManager import *
 import time
+import colorsys
 
 from Text import *
 pygame.mixer.init()
@@ -21,7 +22,10 @@ class Game:
                              [10, self.res[1] - 10]]
 
         self.window_title = "SpaceShips Battle"
-        self.is_running = True
+        self.is_running = False
+
+        self.true = True
+        self.game_over_true = False
 
         self.clock = pygame.time.Clock()
 
@@ -44,6 +48,14 @@ class Game:
         self.game_over_timer = 2
         self.game_over_timer_start = 0
 
+        self.banner = pygame.image.load('res/images/banner.png')
+
+        self.play_button = pygame.image.load('res/images/play.png')
+        self.play_button_rect = self.play_button.get_rect()
+
+        self.quit_button = pygame.image.load('res/images/quit.png')
+        self.quit_button_rect = self.quit_button.get_rect()
+
         self.start()
 
     def start(self):
@@ -55,17 +67,24 @@ class Game:
         self.run()
 
     def run(self):
-        while self.is_running:
-            for e in pygame.event.get():
-                self.manage_events(e)
-            self.manage_pressed_keys()
-            self.update()
+        try:
+            while self.true:
+                for e in pygame.event.get():
+                    self.manage_events(e)
 
-        self.quit()
+                self.manage_pressed_keys()
+                self.update()
+        except pygame.error:
+            pass
 
     def manage_events(self, e):
         if e.type == QUIT:
-            self.is_running = False
+            self.quit()
+
+        if e.type == MOUSEBUTTONDOWN:
+            if self.play_button_rect.collidepoint(pygame.mouse.get_pos()):
+                self.is_running = True
+
         if e.type == KEYDOWN:
             if e.key == K_SPACE:
                 bullet = self.player.fire()
@@ -127,7 +146,7 @@ class Game:
             self.quit()
 
     def draw_score(self):
-        screen_text(f"Score :  {str(self.score)}", self.score_font_size, pygame.Color(255, 255, 255, 255), self.screen, self.score_text_pos)
+        screen_text(f"Score : {str(self.score)}", self.score_font_size, pygame.Color(255, 255, 255, 255), self.screen, self.score_text_pos)
 
     def clear_bullets(self, group):
         for bullet in group.sprites():
@@ -144,29 +163,40 @@ class Game:
         self.clear_bullets(self.player_bullet_group)
         self.clear_bullets(self.enemy_manager.bullet_group)
 
-        self.player.update()
-        self.player_bullet_group.update()
+        if self.is_running:
 
-        self.enemy_manager.update()
+            self.player.update()
+            self.player_bullet_group.update()
 
-        self.draw()
-        self.draw_score()
+            self.enemy_manager.update()
+            self.draw_score()
 
-        self.manage_collision()
+            self.draw()
+
+            self.manage_collision()
+
+        else:
+            self.screen.blit(self.banner, (self.res[0]/2 - 181, self.res[1]/2 - 70))
+            self.screen.blit(self.play_button, self.play_button_rect.topleft)
+            self.play_button_rect.topleft = self.res[0]/2 - 56, self.res[1]/2 + 75
 
         self.clock.tick(50)
-        try:
-            pygame.display.flip()
-        except pygame.error:
-            pass
+        pygame.display.flip()
 
     def game_over(self):
+        self.game_over_true = True
         self.game_over_timer_start = time.time()
-        while time.time() - self.game_over_timer_start < self.game_over_timer:
+        while self.game_over_true:
             self.screen.fill(pygame.Color(0, 0, 0, 255))
 
             screen_text("Game Over", 70, pygame.Color(255, 0, 0, 255), self.screen, (self.res[0]/2, self.res[1]/2))
             screen_text(f"Score : {str(self.score)}", 50, pygame.Color(255, 255, 255, 255), self.screen, (self.res[0] / 2, self.res[1] / 2 + 50))
+
+            self.screen.blit(self.quit_button, self.quit_button_rect.topleft)
+            self.quit_button_rect.topleft = (self.res[0]/2 - 50, self.res[1]/2 + 75)
+            for e in pygame.event.get():
+                if e.type == MOUSEBUTTONDOWN and self.quit_button_rect.collidepoint(e.pos):
+                    self.game_over_true = False
 
             pygame.display.flip()
 
@@ -174,7 +204,6 @@ class Game:
         self.quit()
 
     def quit(self):
-        self.is_running = False
         pygame.display.quit()
         pygame.quit()
         del self

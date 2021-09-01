@@ -39,7 +39,7 @@ class SpaceShip(pygame.sprite.Sprite):
             self.can_fire = True
 
     def move(self, x, y):
-        delta_rot =  x*self.angle_speed
+        delta_rot = x*self.angle_speed
         self.rotation -= delta_rot
 
         vec = pygame.math.Vector2(0, 1)
