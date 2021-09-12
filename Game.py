@@ -105,9 +105,9 @@ class Game:
                 if bullet:
                     self.player_bullet_group.add(bullet)
 
-        if e.type == JOYAXISMOTION:
-            if e.axis < 2:
-                self.vector[e.axis] = round(e.value)
+        #if e.type == JOYAXISMOTION:
+        #   if e.axis < 2:
+        #       self.vector[e.axis] = round(e.value)
 
         if e.type == KEYDOWN:
             if e.key == K_SPACE:
@@ -118,6 +118,7 @@ class Game:
     def manage_pressed_keys(self):
         pressed = pygame.key.get_pressed()
 
+        self.vector = [0, 0]
         if pressed[K_q] or pressed[K_LEFT]:
             self.vector[0] -= 1
         if pressed[K_d] or pressed[K_RIGHT]:
@@ -200,7 +201,7 @@ class Game:
             self.screen.blit(self.play_button, self.play_button_rect.topleft)
             self.play_button_rect.topleft = self.res[0]/2 - 56, self.res[1]/2 + 75
             if pygame.joystick.get_count() >= 1:
-                screen_text('Press A / X to start', 40, pygame.Color(255, 255, 255, 255), self.screen, (self.res[0]/2 - 13, self.res[1]/2 + 145))
+                screen_text('Press A / X to start\n or press the play button', 40, pygame.Color(255, 255, 255, 255), self.screen, (self.res[0]/2 - 13, self.res[1]/2 + 145))
 
         self.clock.tick(50)
         pygame.display.flip()
