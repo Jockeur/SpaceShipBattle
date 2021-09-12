@@ -4,9 +4,11 @@ from SpaceShip import *
 from EnemyManager import *
 import time
 import colorsys
+import json
 
 from Text import *
 pygame.mixer.init()
+pygame.joystick.init()
 
 
 class Game:
@@ -56,6 +58,15 @@ class Game:
         self.quit_button = pygame.image.load('res/images/quit.png')
         self.quit_button_rect = self.quit_button.get_rect()
 
+        self.menu_button = pygame.image.load('res/images/menu.png')
+        self.menu_button_rect = self.menu_button.get_rect()
+
+        self.highscore = {}
+
+        self.joystick = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
+
+        self.vector = [0, 0]
+
         self.start()
 
     def start(self):
@@ -85,6 +96,19 @@ class Game:
             if self.play_button_rect.collidepoint(pygame.mouse.get_pos()):
                 self.is_running = True
 
+        if e.type == JOYBUTTONUP:
+            if e.button == 0:
+                if not self.is_running:
+                    self.is_running = True
+            if e.button == 1:
+                bullet = self.player.fire()
+                if bullet:
+                    self.player_bullet_group.add(bullet)
+
+        if e.type == JOYAXISMOTION:
+            if e.axis < 2:
+                self.vector[e.axis] = round(e.value)
+
         if e.type == KEYDOWN:
             if e.key == K_SPACE:
                 bullet = self.player.fire()
@@ -94,17 +118,15 @@ class Game:
     def manage_pressed_keys(self):
         pressed = pygame.key.get_pressed()
 
-        vector = [0, 0]
         if pressed[K_q] or pressed[K_LEFT]:
-            vector[0] -= 1
+            self.vector[0] -= 1
         if pressed[K_d] or pressed[K_RIGHT]:
-            vector[0] += 1
+            self.vector[0] += 1
         if pressed[K_s] or pressed[K_DOWN]:
-            vector[1] += 1
+            self.vector[1] += 1
         if pressed[K_z] or pressed[K_UP]:
-            vector[1] -= 1
-
-        self.player.move(vector[0], vector[1])
+            self.vector[1] -= 1
+        self.player.move(self.vector[0], self.vector[1])
 
         # x
         if self.player.pos[0] < self.player_bords[0][0]:
@@ -143,8 +165,6 @@ class Game:
             del self.player
             self.game_over()
 
-            self.quit()
-
     def draw_score(self):
         screen_text(f"Score : {str(self.score)}", self.score_font_size, pygame.Color(255, 255, 255, 255), self.screen, self.score_text_pos)
 
@@ -179,6 +199,8 @@ class Game:
             self.screen.blit(self.banner, (self.res[0]/2 - 181, self.res[1]/2 - 70))
             self.screen.blit(self.play_button, self.play_button_rect.topleft)
             self.play_button_rect.topleft = self.res[0]/2 - 56, self.res[1]/2 + 75
+            if pygame.joystick.get_count() >= 1:
+                screen_text('Press A / X to start', 40, pygame.Color(255, 255, 255, 255), self.screen, (self.res[0]/2 - 13, self.res[1]/2 + 145))
 
         self.clock.tick(50)
         pygame.display.flip()
@@ -187,21 +209,37 @@ class Game:
         self.game_over_true = True
         self.game_over_timer_start = time.time()
         while self.game_over_true:
-            self.screen.fill(pygame.Color(0, 0, 0, 255))
+            self.screen.blit(self.bg_img, (0, 0))
 
             screen_text("Game Over", 70, pygame.Color(255, 0, 0, 255), self.screen, (self.res[0]/2, self.res[1]/2))
             screen_text(f"Score : {str(self.score)}", 50, pygame.Color(255, 255, 255, 255), self.screen, (self.res[0] / 2, self.res[1] / 2 + 50))
 
             self.screen.blit(self.quit_button, self.quit_button_rect.topleft)
             self.quit_button_rect.topleft = (self.res[0]/2 - 50, self.res[1]/2 + 75)
+            self.screen.blit(self.menu_button, self.menu_button_rect.topleft)
+            self.menu_button_rect.topleft = (self.res[0]/2 - 50, self.res[1]/2 + 130)
             for e in pygame.event.get():
-                if e.type == MOUSEBUTTONDOWN and self.quit_button_rect.collidepoint(e.pos):
-                    self.game_over_true = False
+                if e.type == MOUSEBUTTONDOWN:
+                    if self.quit_button_rect.collidepoint(e.pos):
+                        self.game_over_true = False
+                    if self.menu_button_rect.collidepoint(e.pos):
+                        self.is_running = False
+                        self.__init__((1200, 720))
+
+                if e.type == JOYBUTTONUP:
+                    if e.button == 1:
+                        self.quit()
+                    if e.button == 0:
+                        self.is_running = False
+                        self.__init__((1200, 720))
 
             pygame.display.flip()
 
         self.is_running = False
         self.quit()
+
+    def restart(self):
+        pass
 
     def quit(self):
         pygame.display.quit()
