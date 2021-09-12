@@ -105,9 +105,9 @@ class Game:
                 if bullet:
                     self.player_bullet_group.add(bullet)
 
-        #if e.type == JOYAXISMOTION:
-        #   if e.axis < 2:
-        #       self.vector[e.axis] = round(e.value)
+        if e.type == JOYAXISMOTION:
+            if e.axis < 2:
+                self.vector[e.axis] = round(e.value)
 
         if e.type == KEYDOWN:
             if e.key == K_SPACE:
