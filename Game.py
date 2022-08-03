@@ -1,10 +1,9 @@
 import pygame
 from pygame.locals import *
-from SpaceShip import *
 from EnemyManager import *
 import time
-import colorsys
 import json
+from DataManagement import *
 
 from Text import *
 pygame.mixer.init()
@@ -27,6 +26,7 @@ class Game:
         self.is_running = False
 
         self.true = True
+        self.show_scores = False
         self.game_over_true = False
 
         self.clock = pygame.time.Clock()
@@ -49,6 +49,12 @@ class Game:
 
         self.game_over_timer = 2
         self.game_over_timer_start = 0
+
+        self.show_scores_timer = 2
+        self.show_scores_timer_start = 0
+
+        self.scores = []
+        self.best_score = int
 
         self.banner = pygame.image.load('res/images/banner.png')
 
@@ -164,7 +170,7 @@ class Game:
 
             del bullet
             del self.player
-            self.game_over()
+            self.show_score()
 
     def draw_score(self):
         screen_text(f"Score : {str(self.score)}", self.score_font_size, pygame.Color(255, 255, 255, 255), self.screen, self.score_text_pos)
@@ -206,9 +212,43 @@ class Game:
         self.clock.tick(50)
         pygame.display.flip()
 
+    def show_score(self):
+        self.show_scores = True
+        self.show_scores_timer_start = time.time()
+
+        while self.show_scores:
+            self.screen.blit(self.bg_img, (0, 0))
+
+            screen_text(f"Your score : {self.score}", 70, pygame.Color(0, 10, 255, 255), self.screen, (1000, 50))
+            screen_text("Last Scores : ", 70, pygame.Color(0, 255, 10, 255), self.screen, (self.res[0]/2, 50))
+            screen_text("Press space to continue", 40, pygame.Color(255, 255, 255, 255), self.screen, (self.res[0]/2, 680))
+
+            with open("res/data/data.json", "r+") as file:
+                self.scores = json.load(file)
+                i = 0
+                while i <= 10:
+                    try:
+                        screen_text(self.scores["scores"][f"score{i}"]["username"], 50,
+                                    pygame.Color(255, 255, 255, 255), self.screen, (500, self.res[1]/2 + 80 + i*30))
+                        screen_text(str(self.scores["scores"][f"score{i}"]["score"]), 50,
+                                    pygame.Color(255, 255, 255, 255), self.screen, (500 + 200, self.res[1]/2 + 80 + i*30))
+                    except KeyError:
+                        pass
+                    i += 1
+
+            for e in pygame.event.get():
+                if e.type == KEYDOWN:
+                    if e.key == K_SPACE:
+                        add_score("Jockeur", self.score)
+                        self.show_scores = False
+                        self.game_over()
+
+            pygame.display.flip()
+
     def game_over(self):
         self.game_over_true = True
         self.game_over_timer_start = time.time()
+
         while self.game_over_true:
             self.screen.blit(self.bg_img, (0, 0))
 
@@ -238,9 +278,6 @@ class Game:
 
         self.is_running = False
         self.quit()
-
-    def restart(self):
-        pass
 
     def quit(self):
         pygame.display.quit()
